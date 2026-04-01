@@ -11,6 +11,7 @@ const NOTION_VERSION = "2022-06-28";
 
 interface NotionConfig {
   notionTokenRef: string;
+  notionToken?: string;
   notionDatabaseId: string;
   paperclipBaseUrl: string;
   companyDomainMap: string;
@@ -111,11 +112,20 @@ export function createNotionClient(ctx: PluginContext) {
 
   async function getToken(config: NotionConfig): Promise<string> {
     if (resolvedToken) return resolvedToken;
-    if (!config.notionTokenRef) {
-      throw new Error("notionTokenRef is not configured");
+    // Try secret ref first, then fall back to direct token
+    if (config.notionTokenRef) {
+      try {
+        resolvedToken = await ctx.secrets.resolve(config.notionTokenRef);
+        return resolvedToken;
+      } catch {
+        // Secret ref resolution failed — try direct token
+      }
     }
-    resolvedToken = await ctx.secrets.resolve(config.notionTokenRef);
-    return resolvedToken;
+    if (config.notionToken) {
+      resolvedToken = config.notionToken;
+      return resolvedToken;
+    }
+    throw new Error("Neither notionTokenRef nor notionToken is configured");
   }
 
   function clearTokenCache() {

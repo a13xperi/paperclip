@@ -34,6 +34,12 @@ const manifest: PaperclipPluginManifestV1 = {
           "Paperclip secret reference for the Notion internal integration token.",
         default: DEFAULT_CONFIG.notionTokenRef,
       },
+      notionToken: {
+        type: "string",
+        title: "Notion API Token (Direct)",
+        description:
+          "Direct Notion API token. Use this if you don't have a Paperclip secret configured. The secret ref is preferred when available.",
+      },
       notionDatabaseId: {
         type: "string",
         title: "Notion Database ID",

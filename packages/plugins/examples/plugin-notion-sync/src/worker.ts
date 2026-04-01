@@ -16,6 +16,7 @@ import {
 
 interface SyncConfig {
   notionTokenRef: string;
+  notionToken?: string;
   notionDatabaseId: string;
   paperclipBaseUrl: string;
   companyDomainMap: string;
@@ -35,6 +36,7 @@ const plugin: PaperclipPlugin = definePlugin({
       const cfg = ((await ctx.config.get()) ?? {}) as Partial<SyncConfig>;
       return {
         notionTokenRef: cfg.notionTokenRef || DEFAULT_CONFIG.notionTokenRef,
+        notionToken: cfg.notionToken || undefined,
         notionDatabaseId: cfg.notionDatabaseId || DEFAULT_CONFIG.notionDatabaseId,
         paperclipBaseUrl: (cfg.paperclipBaseUrl || DEFAULT_CONFIG.paperclipBaseUrl).replace(/\/$/, ""),
         companyDomainMap: cfg.companyDomainMap || DEFAULT_CONFIG.companyDomainMap,
