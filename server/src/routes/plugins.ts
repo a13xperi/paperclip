@@ -139,6 +139,14 @@ const BUNDLED_PLUGIN_EXAMPLES: AvailablePluginExample[] = [
     localPath: "packages/plugins/examples/plugin-kitchen-sink-example",
     tag: "example",
   },
+  {
+    packageName: "@paperclipai/plugin-notion-sync",
+    pluginKey: "plugin-notion-sync",
+    displayName: "Notion Ticket Sync",
+    description: "Syncs Paperclip issue events (created, updated) to a Notion Session Artifacts database for cross-platform visibility.",
+    localPath: "packages/plugins/examples/plugin-notion-sync",
+    tag: "example",
+  },
 ];
 
 function listBundledPluginExamples(): AvailablePluginExample[] {

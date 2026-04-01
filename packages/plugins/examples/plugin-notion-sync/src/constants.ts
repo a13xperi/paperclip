@@ -14,6 +14,8 @@ export const DEFAULT_CONFIG = {
   companyDomainMap: JSON.stringify({
     DEL: "📊 Delphi",
     KAA: "🌿 KAA",
+    FP: "🏗️ SAGE Infrastructure",
+    SAG: "🏗️ SAGE Infrastructure",
   }),
 } as const;
 
