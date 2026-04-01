@@ -8,7 +8,7 @@ import { authApi } from "../api/auth";
 import { queryKeys } from "../lib/queryKeys";
 import { formatAssigneeUserLabel } from "../lib/assignees";
 import { groupBy } from "../lib/groupBy";
-import { formatDate, cn } from "../lib/utils";
+import { formatDate, formatDateTime, cn } from "../lib/utils";
 import { timeAgo } from "../lib/timeAgo";
 import { StatusIcon } from "./StatusIcon";
 import { PriorityIcon } from "./PriorityIcon";
@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { CircleDot, Plus, Filter, ArrowUpDown, Layers, Check, X, ChevronRight, List, Columns3, User, Search } from "lucide-react";
 import { KanbanBoard } from "./KanbanBoard";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import type { Issue } from "@paperclipai/shared";
 
 /* ── Helpers ── */
@@ -44,7 +45,7 @@ export type IssueViewState = {
   projects: string[];
   sortField: "status" | "priority" | "title" | "created" | "updated";
   sortDir: "asc" | "desc";
-  groupBy: "status" | "priority" | "assignee" | "none";
+  groupBy: "status" | "priority" | "assignee" | "project" | "none";
   viewMode: "list" | "board";
   collapsedGroups: string[];
 };
@@ -326,6 +327,24 @@ export function IssuesList({
         .filter((p) => groups[p]?.length)
         .map((p) => ({ key: p, label: statusLabel(p), items: groups[p]! }));
     }
+    if (viewState.groupBy === "project") {
+      const groups = groupBy(filtered, (i) => i.projectId ?? "__no_project");
+      const projectName = (id: string) => {
+        if (id === "__no_project") return "No Project";
+        const p = projects?.find((proj) => proj.id === id);
+        return p?.name ?? id.slice(0, 8);
+      };
+      const keys = Object.keys(groups).sort((a, b) => {
+        if (a === "__no_project") return 1;
+        if (b === "__no_project") return -1;
+        return projectName(a).localeCompare(projectName(b));
+      });
+      return keys.map((key) => ({
+        key,
+        label: projectName(key),
+        items: groups[key]!,
+      }));
+    }
     // assignee
     const groups = groupBy(
       filtered,
@@ -341,7 +360,7 @@ export function IssuesList({
             : (agentName(key) ?? key.slice(0, 8)),
       items: groups[key]!,
     }));
-  }, [filtered, viewState.groupBy, agents, agentName, currentUserId]);
+  }, [filtered, viewState.groupBy, agents, agentName, currentUserId, projects]);
 
   const newIssueDefaults = (groupKey?: string) => {
     const defaults: Record<string, string> = {};
@@ -349,6 +368,7 @@ export function IssuesList({
     if (groupKey) {
       if (viewState.groupBy === "status") defaults.status = groupKey;
       else if (viewState.groupBy === "priority") defaults.priority = groupKey;
+      else if (viewState.groupBy === "project" && groupKey !== "__no_project") defaults.projectId = groupKey;
       else if (viewState.groupBy === "assignee" && groupKey !== "__unassigned") {
         if (groupKey.startsWith("__user:")) defaults.assigneeUserId = groupKey.slice("__user:".length);
         else defaults.assigneeAgentId = groupKey;
@@ -626,6 +646,7 @@ export function IssuesList({
                     ["status", "Status"],
                     ["priority", "Priority"],
                     ["assignee", "Assignee"],
+                    ["project", "Project"],
                     ["none", "None"],
                   ] as const).map(([value, label]) => (
                     <button
@@ -876,7 +897,16 @@ export function IssuesList({
                       </Popover>
                     </>
                   )}
-                  trailingMeta={formatDate(issue.createdAt)}
+                  trailingMeta={
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>{timeAgo(issue.createdAt)}</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {formatDateTime(issue.createdAt)}
+                      </TooltipContent>
+                    </Tooltip>
+                  }
                 />
               ))}
             </CollapsibleContent>
