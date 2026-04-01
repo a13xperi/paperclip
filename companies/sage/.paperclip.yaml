@@ -1,0 +1,22 @@
+schema: paperclip/v1
+agents:
+  ops-director:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+  project-manager:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+  process-auditor:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+  devops-monitor:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
