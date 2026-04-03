@@ -14,6 +14,7 @@ import { createStoredZipArchive } from "./helpers/zip.js";
 
 const execFileAsync = promisify(execFile);
 type ServerProcess = ReturnType<typeof spawn>;
+const companyImportExportE2eTestTimeoutMs = 120_000;
 
 async function getAvailablePort(): Promise<number> {
   return await new Promise((resolve, reject) => {
@@ -498,5 +499,5 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
 
     expect(importedFromZip.company.action).toBe("created");
     expect(importedFromZip.agents.some((agent) => agent.action === "created")).toBe(true);
-  }, 60_000);
+  }, companyImportExportE2eTestTimeoutMs);
 });

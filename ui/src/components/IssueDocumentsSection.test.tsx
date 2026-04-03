@@ -215,13 +215,63 @@ function createIssue(): Issue {
   };
 }
 
+function createMemoryStorage(): Storage {
+  const values = new Map<string, string>();
+
+  return {
+    get length() {
+      return values.size;
+    },
+    clear() {
+      values.clear();
+    },
+    getItem(key: string) {
+      return values.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(values.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      values.delete(key);
+    },
+    setItem(key: string, value: string) {
+      values.set(key, value);
+    },
+  };
+}
+
+function clearLocalStorage() {
+  const storage = window.localStorage as Storage & { clear?: () => void };
+  if (typeof storage.clear === "function") {
+    storage.clear();
+    return;
+  }
+
+  const keys = Array.from({ length: storage.length }, (_value, index) => storage.key(index))
+    .filter((key): key is string => Boolean(key));
+  for (const key of keys) {
+    storage.removeItem(key);
+  }
+}
+
 describe("IssueDocumentsSection", () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
     container = document.createElement("div");
     document.body.appendChild(container);
-    window.localStorage.clear();
+    if (
+      typeof window.localStorage?.getItem !== "function" ||
+      typeof window.localStorage?.setItem !== "function" ||
+      typeof window.localStorage?.removeItem !== "function" ||
+      typeof window.localStorage?.clear !== "function"
+    ) {
+      Object.defineProperty(window, "localStorage", {
+        value: createMemoryStorage(),
+        configurable: true,
+      });
+    }
+    clearLocalStorage();
     vi.clearAllMocks();
     markdownEditorMockState.emitMountEmptyChange = false;
   });
