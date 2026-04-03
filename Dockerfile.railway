@@ -23,6 +23,7 @@ COPY packages/adapters/pi-local/package.json packages/adapters/pi-local/
 COPY packages/plugins/sdk/package.json packages/plugins/sdk/
 COPY packages/plugins/examples/plugin-atlas-api/package.json packages/plugins/examples/plugin-atlas-api/
 COPY packages/plugins/examples/plugin-notion-sync/package.json packages/plugins/examples/plugin-notion-sync/
+COPY packages/plugins/examples/plugin-cost-ledger/package.json packages/plugins/examples/plugin-cost-ledger/
 COPY patches/ patches/
 
 RUN pnpm install --frozen-lockfile
@@ -35,6 +36,7 @@ RUN pnpm --filter @paperclipai/ui build
 RUN pnpm --filter @paperclipai/plugin-sdk build
 RUN pnpm --filter @paperclipai/plugin-atlas-api build
 RUN pnpm --filter @paperclipai/plugin-notion-sync build
+RUN pnpm --filter @paperclipai/plugin-cost-ledger build
 # Skip server tsc build — use tsx at runtime instead (upstream has TS2339 errors)
 
 FROM base AS production

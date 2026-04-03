@@ -43,6 +43,7 @@ jobs:
         run: |
           cd packages/plugins/examples/plugin-atlas-api && pnpm build
           cd ../plugin-notion-sync && pnpm build
+          cd ../plugin-cost-ledger && pnpm build
 
       - name: Run tests
         run: pnpm test:run
