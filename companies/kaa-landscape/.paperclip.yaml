@@ -1,0 +1,27 @@
+schema: paperclip/v1
+agents:
+  ceo:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-opus-4-6
+  project-manager:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+  design-archivist:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+  qa-reviewer:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+  client-comms:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
