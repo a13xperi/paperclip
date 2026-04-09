@@ -10,6 +10,15 @@ import {
 } from "@paperclipai/adapter-claude-local/server";
 import { agentConfigurationDoc as claudeAgentConfigurationDoc, models as claudeModels } from "@paperclipai/adapter-claude-local";
 import {
+  execute as claudeApiExecute,
+  testEnvironment as claudeApiTestEnvironment,
+  sessionCodec as claudeApiSessionCodec,
+} from "@paperclipai/adapter-claude-api/server";
+import {
+  agentConfigurationDoc as claudeApiAgentConfigurationDoc,
+  models as claudeApiModels,
+} from "@paperclipai/adapter-claude-api";
+import {
   execute as codexExecute,
   listCodexSkills,
   syncCodexSkills,
@@ -94,6 +103,17 @@ const claudeLocalAdapter: ServerAdapterModule = {
   supportsLocalAgentJwt: true,
   agentConfigurationDoc: claudeAgentConfigurationDoc,
   getQuotaWindows: claudeGetQuotaWindows,
+};
+
+const claudeApiAdapter: ServerAdapterModule = {
+  type: "claude_api",
+  execute: claudeApiExecute,
+  testEnvironment: claudeApiTestEnvironment,
+  sessionCodec: claudeApiSessionCodec,
+  // claude_api is stateless (no session resume), so no sessionManagement entry.
+  models: claudeApiModels,
+  supportsLocalAgentJwt: false,
+  agentConfigurationDoc: claudeApiAgentConfigurationDoc,
 };
 
 const codexLocalAdapter: ServerAdapterModule = {
@@ -191,6 +211,7 @@ const hermesLocalAdapter: ServerAdapterModule = {
 const adaptersByType = new Map<string, ServerAdapterModule>(
   [
     claudeLocalAdapter,
+    claudeApiAdapter,
     codexLocalAdapter,
     openCodeLocalAdapter,
     piLocalAdapter,

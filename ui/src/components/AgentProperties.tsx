@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
-import { AGENT_ROLE_LABELS, type Agent, type AgentRuntimeState } from "@paperclipai/shared";
+import { AGENT_ROLE_LABELS, CLAUDE_MODEL_LABELS, type Agent, type AgentRuntimeState } from "@paperclipai/shared";
 import { agentsApi } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";
 import { queryKeys } from "../lib/queryKeys";
@@ -64,6 +64,17 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
         <PropertyRow label="Adapter">
           <span className="text-sm font-mono">{adapterLabels[agent.adapterType] ?? agent.adapterType}</span>
         </PropertyRow>
+        {(() => {
+          const ac = agent.adapterConfig as Record<string, unknown> | null;
+          const modelId = typeof ac?.model === "string" ? ac.model : null;
+          if (!modelId) return null;
+          const label = (CLAUDE_MODEL_LABELS as Record<string, string>)[modelId] ?? modelId;
+          return (
+            <PropertyRow label="Model">
+              <span className="text-sm font-mono">{label}</span>
+            </PropertyRow>
+          );
+        })()}
       </div>
 
       <Separator />

@@ -33,13 +33,24 @@ export type UpsertAgentInstructionsFile = z.infer<typeof upsertAgentInstructions
 
 const adapterConfigSchema = z.record(z.unknown()).superRefine((value, ctx) => {
   const envValue = value.env;
-  if (envValue === undefined) return;
-  const parsed = envConfigSchema.safeParse(envValue);
-  if (!parsed.success) {
+  if (envValue === undefined) {
+    // no env to validate
+  } else {
+    const parsed = envConfigSchema.safeParse(envValue);
+    if (!parsed.success) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "adapterConfig.env must be a map of valid env bindings",
+        path: ["env"],
+      });
+    }
+  }
+  const modelValue = value.model;
+  if (modelValue !== undefined && typeof modelValue !== "string") {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "adapterConfig.env must be a map of valid env bindings",
-      path: ["env"],
+      message: "adapterConfig.model must be a string when provided",
+      path: ["model"],
     });
   }
 });
