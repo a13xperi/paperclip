@@ -13,9 +13,33 @@ import {
   heartbeatRuns,
 } from "@paperclipai/db";
 import { isUuidLike, normalizeAgentUrlKey } from "@paperclipai/shared";
+import { pickDefaultClaudeModel } from "@paperclipai/adapter-claude-api";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { normalizeAgentPermissions } from "./agent-permissions.js";
 import { REDACTED_EVENT_VALUE, sanitizeRecord } from "../redaction.js";
+
+/**
+ * When a claude_api agent is created without an explicit model, derive a
+ * sensible default from its role/title/capabilities/name so bug-sync agents
+ * get Haiku, strategists get Opus, and general builders get Sonnet.
+ */
+function applyClaudeApiModelDefault(
+  data: Omit<typeof agents.$inferInsert, "companyId">,
+): Omit<typeof agents.$inferInsert, "companyId"> {
+  if (data.adapterType !== "claude_api") return data;
+  const existing = isPlainRecord(data.adapterConfig) ? data.adapterConfig : {};
+  if (typeof existing.model === "string" && existing.model.length > 0) return data;
+  const picked = pickDefaultClaudeModel({
+    role: data.role ?? null,
+    title: data.title ?? null,
+    capabilities: data.capabilities ?? null,
+    name: data.name ?? null,
+  });
+  return {
+    ...data,
+    adapterConfig: { ...existing, model: picked },
+  };
+}
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -394,9 +418,16 @@ export function agentService(db: Db) {
 
       const role = data.role ?? "general";
       const normalizedPermissions = normalizeAgentPermissions(data.permissions, role);
+      const normalizedData = applyClaudeApiModelDefault(data);
       const created = await db
         .insert(agents)
-        .values({ ...data, name: uniqueName, companyId, role, permissions: normalizedPermissions })
+        .values({
+          ...normalizedData,
+          name: uniqueName,
+          companyId,
+          role,
+          permissions: normalizedPermissions,
+        })
         .returning()
         .then((rows) => rows[0]);
 

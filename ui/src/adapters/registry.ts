@@ -1,4 +1,5 @@
 import type { UIAdapterModule } from "./types";
+import { claudeApiUIAdapter } from "./claude-api";
 import { claudeLocalUIAdapter } from "./claude-local";
 import { codexLocalUIAdapter } from "./codex-local";
 import { cursorLocalUIAdapter } from "./cursor";
@@ -12,6 +13,7 @@ import { httpUIAdapter } from "./http";
 
 const uiAdapters: UIAdapterModule[] = [
   claudeLocalUIAdapter,
+  claudeApiUIAdapter,
   codexLocalUIAdapter,
   geminiLocalUIAdapter,
   hermesLocalUIAdapter,

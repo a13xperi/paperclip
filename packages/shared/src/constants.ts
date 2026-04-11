@@ -25,6 +25,7 @@ export const AGENT_ADAPTER_TYPES = [
   "process",
   "http",
   "claude_local",
+  "claude_api",
   "codex_local",
   "gemini_local",
   "opencode_local",
@@ -34,6 +35,21 @@ export const AGENT_ADAPTER_TYPES = [
   "hermes_local",
 ] as const;
 export type AgentAdapterType = (typeof AGENT_ADAPTER_TYPES)[number];
+
+export const CLAUDE_MODELS = [
+  "claude-haiku-4-5-20251001",
+  "claude-sonnet-4-6",
+  "claude-opus-4-6",
+] as const;
+export type ClaudeModel = (typeof CLAUDE_MODELS)[number];
+
+export const DEFAULT_CLAUDE_MODEL: ClaudeModel = "claude-sonnet-4-6";
+
+export const CLAUDE_MODEL_LABELS: Record<ClaudeModel, string> = {
+  "claude-haiku-4-5-20251001": "Claude Haiku 4.5",
+  "claude-sonnet-4-6": "Claude Sonnet 4.6",
+  "claude-opus-4-6": "Claude Opus 4.6",
+};
 
 export const AGENT_ROLES = [
   "ceo",

@@ -5,6 +5,7 @@ export default defineConfig({
     maxWorkers: 2,
     projects: [
       "packages/db",
+      "packages/adapters/claude-api",
       "packages/adapters/codex-local",
       "packages/adapters/opencode-local",
       "server",
