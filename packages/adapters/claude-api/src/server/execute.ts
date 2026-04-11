@@ -136,6 +136,30 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
   const userPrompt = joinPromptSections([renderedBootstrap, sessionHandoffNote, renderedPrompt]);
 
+  // Empty-prompt guard. When tickTimers wakes an agent and the context snapshot
+  // is empty (no inbox digest, no pending issue, no handoff) the prompt template
+  // can render to an empty string. Previously we fell back to sending "Continue."
+  // which caused Claude to respond "I'm standing by", Paperclip to log a success,
+  // and the heartbeat scheduler to requeue forever — the single line "Continue."
+  // fallback was the root cause of 297 Life Pilot empty heartbeats on 2026-04-09.
+  // Refuse to spend tokens on empty context; let the heartbeat report a failure
+  // so the operator can investigate.
+  if (userPrompt.trim().length === 0) {
+    const message = "Refusing to invoke model with empty user prompt";
+    await onLog("stderr", `[paperclip] ${message}\n`);
+    return {
+      exitCode: 1,
+      signal: null,
+      timedOut: false,
+      errorMessage: message,
+      errorCode: "empty_prompt",
+      provider: "anthropic",
+      biller: "anthropic",
+      billingType: "api",
+      model,
+    };
+  }
+
   const promptMetrics = {
     promptChars: userPrompt.length,
     bootstrapPromptChars: renderedBootstrap.length,
@@ -194,7 +218,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       messages: [
         {
           role: "user",
-          content: userPrompt || "Continue.",
+          content: userPrompt,
         },
       ],
     });
