@@ -409,6 +409,33 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     sessionHandoffNote,
     renderedPrompt,
   ]);
+
+  // Empty-prompt guard. When tickTimers wakes an agent and the context snapshot
+  // is empty (no inbox digest, no pending issue, no handoff) the prompt template
+  // can render to an empty string. The claude-api sibling adapter previously
+  // fell back to sending "Continue." which caused the model to respond
+  // "I'm standing by", Paperclip to log a success, and the heartbeat scheduler
+  // to requeue forever — the root cause of 297 Life Pilot empty heartbeats on
+  // 2026-04-09. claude-local does not have a fallback string but it still
+  // spawns the CLI and streams an empty stdin, which wastes a run and produces
+  // confusing no-op telemetry. Refuse to spawn on empty context.
+  if (prompt.trim().length === 0) {
+    const message = "Refusing to spawn claude CLI with empty user prompt";
+    await onLog("stderr", `[paperclip] ${message}\n`);
+    return {
+      exitCode: 1,
+      signal: null,
+      timedOut: false,
+      errorMessage: message,
+      errorCode: "empty_prompt",
+      provider: "anthropic",
+      biller: "anthropic",
+      billingType,
+      model: model || null,
+      clearSession: false,
+    };
+  }
+
   const promptMetrics = {
     promptChars: prompt.length,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
